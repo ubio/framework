@@ -25,10 +25,12 @@ export class AuthContext<T extends AuthToken | null> {
     setAuthToken(authToken: T): void {
         this.authToken = authToken;
     }
+
 }
 
-
 export class AuthenticationError extends ClientError {
+
     override status = 401;
     override message = 'Authentication is required';
+
 }

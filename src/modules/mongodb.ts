@@ -6,6 +6,7 @@ import { Db, MongoClient } from 'mongodb';
 import { GlobalMetrics } from '../main/index.js';
 
 export class MongoDb {
+
     client: MongoClient;
 
     protected refreshingMetrics = false;

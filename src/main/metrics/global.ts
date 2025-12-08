@@ -4,13 +4,17 @@ const methodDurationMetric = new HistogramMetric('app_method_duration_seconds',
     'Performance measurements taken for a particular class method');
 
 export class GlobalMetrics {
+
     @metric() methodDuration = methodDurationMetric;
     @metric() handlerDuration = new HistogramMetric('app_handler_duration_seconds',
         'Application performance measurements');
+
     @metric() mongoDocumentsTotal = new GaugeMetric('mongo_documents_total',
         'Estimated count of MongoDB documents, per collection');
+
     @metric() appLogsTotal = new CounterMetric('app_logs_total',
         'Total count of log lines by severity');
+
 }
 
 export function MeasureAsync() {

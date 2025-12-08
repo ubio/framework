@@ -6,15 +6,19 @@ import { dep } from 'mesh-ioc';
 import { JwksClient } from '../jwks.js';
 
 export abstract class JwtService {
+
     abstract decodeAndVerify(token: string): Promise<DecodedJwt>;
+
 }
 
 export class AutomationCloudJwtService extends JwtService {
 
     @config({ default: 'http://hydra.authz.svc.cluster.local:4445/keys/internal' })
     AC_JWKS_URL!: string;
+
     @config({ default: 'HS256' })
     AC_SIGNING_KEY_ALGORITHM!: string;
+
     @config({ default: 60 * 60 * 1000 })
     AC_JWKS_CACHE_MAX_AGE!: number;
 
@@ -40,8 +44,7 @@ export class AutomationCloudJwtService extends JwtService {
         const verified = jsonwebtoken.verify(token, secret);
         return verified && typeof verified === 'object' ? verified : {};
     }
+
 }
 
-export type DecodedJwt = {
-    [key: string]: any;
-};
+export type DecodedJwt = Record<string, any>;

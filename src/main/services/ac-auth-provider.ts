@@ -10,10 +10,11 @@ import { AuthHeaders, AuthProvider } from './auth-provider.js';
 import { JwtService } from './jwt.js';
 
 export class AcAuthProvider extends AuthProvider<AcAuth> {
+
     clientRequest: Request;
 
-    static middlewareCacheTtl: number = 60000;
-    static middlewareTokensCache: Map<string, { token: string; authorisedAt: number }> = new Map();
+    static middlewareCacheTtl = 60000;
+    static middlewareTokensCache = new Map<string, { token: string; authorisedAt: number }>();
 
     @config({ default: 'x-ubio-auth' }) AC_AUTH_HEADER_NAME!: string;
     @config({ default: 'http://auth-middleware.authz.svc.cluster.local:8080/verify' })
@@ -107,6 +108,7 @@ export class AcAuthProvider extends AuthProvider<AcAuth> {
             }
         }
     }
+
 }
 
 export class BypassAcAuthProvider extends AuthProvider<AcAuth> {

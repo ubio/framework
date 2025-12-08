@@ -11,7 +11,7 @@ export interface TokenServiceRestriction {
 }
 
 export interface TrialToken {
-    serviceRestrictions: Array<TokenServiceRestriction>;
+    serviceRestrictions: TokenServiceRestriction[];
     [key: string]: any;
 }
 
@@ -86,4 +86,5 @@ export class TrialClient {
     private getServiceKey(clientId: string, serviceName: string) {
         return `${this.trialKeyPrefix}:${clientId}:${serviceName}`;
     }
+
 }

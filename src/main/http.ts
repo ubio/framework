@@ -24,6 +24,7 @@ interface MiddlewareSpec {
 }
 
 export class HttpServer extends Koa {
+
     server: StoppableServer | null = null;
 
     @config({ default: 8080 }) PORT!: number;
@@ -39,6 +40,7 @@ export class HttpServer extends Koa {
     @dep() protected logger!: Logger;
     @dep({ key: 'httpRequestScope' })
     protected createRequestScope!: () => Mesh;
+
     @dep() protected mesh!: Mesh;
 
     protected middlewares: MiddlewareSpec[] = [
@@ -209,8 +211,10 @@ export class HttpServer extends Koa {
 }
 
 export class RouteNotFoundError extends ClientError {
+
     override status = 404;
     override message = 'Route not found';
+
 }
 
 export class HttpRequestLogger extends Logger {

@@ -20,13 +20,16 @@ export interface JobTimelineEvent {
 }
 
 export abstract class JobTimelineService {
+
     abstract add(timelineEvent: JobTimelineEvent): void;
     abstract start(): Promise<void>;
     abstract stop(): Promise<void>;
+
 }
 
 export class JobTimelineServiceMock extends JobTimelineService {
-    started: boolean = false;
+
+    started = false;
     events: JobTimelineEvent[] = [];
 
     add(timelineEvent: JobTimelineEvent) {
@@ -40,17 +43,19 @@ export class JobTimelineServiceMock extends JobTimelineService {
     async stop() {
         this.started = false;
     }
+
 }
 
 export class ApiJobTimelineService extends JobTimelineService {
+
     private request: Request;
 
     private buffer: JobTimelineEvent[] = [];
-    private bufferSize: number = 30;
-    private bufferTtl: number = 3000;
+    private bufferSize = 30;
+    private bufferTtl = 3000;
     private bufferFlushedAt: number = Date.now();
 
-    private autoFlushActive: boolean = false;
+    private autoFlushActive = false;
     private autoFlushPromise: Promise<void> | null = null;
 
     @config({ default: 'http://api-job-timeline' }) API_JOB_TIMELINE_URL!: string;

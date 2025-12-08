@@ -6,7 +6,6 @@ import { dep, Mesh } from 'mesh-ioc';
 import { HttpRequestLogger, HttpServer } from './http.js';
 import { GlobalMetrics } from './metrics/global.js';
 
-
 /**
  * Application is an IoC composition root where all modules should be registered
  * and provides minimal lifecycle framework (start, stop, beforeStart, afterStop).

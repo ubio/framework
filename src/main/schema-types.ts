@@ -1,42 +1,42 @@
-export type BaseSchema = {
+export interface BaseSchema {
     enum?: any[];
     const?: any;
     nullable?: true;
     optional?: true;
     default?: any;
-};
+}
 
-export type BooleanSchema = {
+export interface BooleanSchema {
     type: 'boolean';
-};
+}
 
-export type StringSchema = {
+export interface StringSchema {
     type: 'string';
     minLength?: number;
     maxLength?: number;
     pattern?: string;
     format?: string;
-};
+}
 
-export type NumberSchema = {
+export interface NumberSchema {
     type: 'number' | 'integer';
     minimum?: number;
     maximum?: number;
     exclusiveMinimum?: number;
     exclusiveMaximum?: number;
     multipleOf?: number;
-};
+}
 
-export type ObjectSchema<T> = {
+export interface ObjectSchema<T> {
     type: 'object';
     properties: PropertiesSpec<T>;
     required?: Array<keyof T>;
-    patternProperties?: { [key: string]: JsonSchema<any> };
+    patternProperties?: Record<string, JsonSchema<any>>;
     additionalProperties?: boolean | JsonSchema<any>;
     propertyNames?: JsonSchema<any>;
-};
+}
 
-export type ArraySchema<T> = {
+export interface ArraySchema<T> {
     type: 'array';
     items: JsonSchema<T>;
     minItems?: number;
@@ -44,7 +44,7 @@ export type ArraySchema<T> = {
     uniqueItems?: number;
     additionalItems?: boolean | JsonSchema<T>;
     contains?: JsonSchema<T>;
-};
+}
 
 export type JsonSchema<T> = (
     T extends string ? StringSchema :

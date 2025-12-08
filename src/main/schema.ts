@@ -9,6 +9,7 @@ import { ajvErrorToMessage } from './util.js';
  * An utility class that allows validating and decoding objects using JSON Schema.
  */
 export class Schema<T> {
+
     schema: JsonSchema<T>;
 
     protected ajv: Ajv.default;
@@ -91,9 +92,11 @@ export class Schema<T> {
             return v;
         });
     }
+
 }
 
 export class ValidationError extends ClientError {
+
     override status = 400;
     constructor(messages: string[]) {
         super(`Validation failed:\n${messages.map(_ => `    - ${_}`).join('\n')}`);
@@ -101,6 +104,7 @@ export class ValidationError extends ClientError {
             messages
         };
     }
+
 }
 
 export interface SchemaInit<T> {

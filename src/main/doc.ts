@@ -98,7 +98,7 @@ function generateResponsesSpec(route: RouteDefinition) {
     return result;
 }
 
-function schemaToSpec(schema: { [key: string]: any }, paddingNum = 0, requiredArray?: string[]) {
+function schemaToSpec(schema: Record<string, any>, paddingNum = 0, requiredArray?: string[]) {
     const spec: string[] = [];
     const padding = ' '.repeat(paddingNum);
 

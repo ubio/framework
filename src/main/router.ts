@@ -81,7 +81,8 @@ function routeDecorator(method: string, spec: RouteSpec, role = RouteRole.ENDPOI
                     `${method} ${path}: BodyParams are only supported if requestBodySchema is not specified`);
             }
         }
-        const requestBodySchema = spec.requestBodySchema ? ajv.compile(spec.requestBodySchema) :
+        const requestBodySchema = spec.requestBodySchema ?
+            ajv.compile(spec.requestBodySchema) :
             bodyParams.length > 0 ? compileParamsSchema(bodyParams) : undefined;
         const paramsSchema = compileParamsSchema(params);
         const route: RouteDefinition = {
@@ -208,7 +209,7 @@ export class Router {
         return await (this as any)[ep.methodKey](...paramsArray);
     }
 
-    protected validateRequestParams(ep: RouteDefinition, paramsObject: { [key: string]: any }) {
+    protected validateRequestParams(ep: RouteDefinition, paramsObject: Record<string, any>) {
         const valid = ep.paramsSchema(paramsObject);
         if (!valid) {
             const messages = ep.paramsSchema.errors!.map(e => ajvErrorToMessage(e));
@@ -245,7 +246,7 @@ export class Router {
         }
     }
 
-    protected assembleParams(ep: RouteDefinition, pathParams: Params): { [key: string]: any } {
+    protected assembleParams(ep: RouteDefinition, pathParams: Params): Record<string, any> {
         const body: any = deepClone(this.ctx.request.body || {});
         const query: any = deepClone(this.ctx.request.query || {});
         // First assemble the parameters into an object and validate them
@@ -270,7 +271,7 @@ export class Router {
 
 function validateRouteDefinition(ep: RouteDefinition) {
     // TODO we can also validate all JSON schema against metaschema here
-    const paramNamesSet: Set<string> = new Set();
+    const paramNamesSet = new Set<string>();
     for (const param of ep.params) {
         if (paramNamesSet.has(param.name)) {
             throw new Exception(
@@ -349,9 +350,7 @@ export function getEndpointRoutes(routerClass: AnyConstructor) {
 
 // Type definitions
 
-export interface Params {
-    [key: string]: any;
-}
+export type Params = Record<string, any>;
 
 export type ParamSource = 'path' | 'query' | 'body';
 
@@ -409,9 +408,7 @@ export interface ParamSpec {
     deprecated?: boolean;
 }
 
-export interface ResponsesSpec {
-    [status: number]: ResponseSpec;
-}
+export type ResponsesSpec = Record<number, ResponseSpec>;
 
 export interface ResponseSpec {
     description?: string;
@@ -420,19 +417,23 @@ export interface ResponseSpec {
 }
 
 export class RequestParametersValidationError extends ClientError {
+
     override status = 400;
 
     constructor(messages: string[]) {
         super(`Invalid request parameters:\n${messages.map(_ => `    - ${_}`).join('\n')}`);
         this.details = { messages };
     }
+
 }
 
 export class ResponseValidationError extends ClientError {
+
     override status = 500;
 
     constructor(messages: string[]) {
         super(`Response body is not valid:\n${messages.map(_ => `    - ${_}`).join('\n')}`);
         this.details = { messages };
     }
+
 }

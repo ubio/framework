@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 import { ClientError } from './exception.js';
 import { AuthToken } from './services/auth-context.js';
 
@@ -53,6 +51,7 @@ export interface AcJobAccessToken {
 }
 
 export class AcAuth implements AuthToken {
+
     actor: AcActor | null = null;
 
     constructor(spec: AcAuthSpec = {}) {
@@ -161,8 +160,11 @@ export class AcAuth implements AuthToken {
         }
         return null;
     }
+
 }
 
 export class AccessForbidden extends ClientError {
+
     override status = 403;
+
 }

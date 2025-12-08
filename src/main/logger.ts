@@ -5,18 +5,20 @@ import { dep } from 'mesh-ioc';
 import { GlobalMetrics } from './metrics/global.js';
 
 export {
-    LOG_LEVELS,
-    LogLevel,
-    Logger,
     ConsoleLogger,
+    LOG_LEVELS,
+    Logger,
+    LogLevel,
 };
 
 export class StandardLogger extends ConsoleLogger {
 
     @config({ default: 'info' })
     LOG_LEVEL!: string;
+
     @config({ default: false })
     LOG_PRETTY!: boolean;
+
     @config({ default: false })
     LOG_LOGFMT!: boolean;
 
@@ -24,7 +26,8 @@ export class StandardLogger extends ConsoleLogger {
 
     constructor() {
         super();
-        this.formatter = this.LOG_PRETTY ? new DefaultLogFormatter() :
+        this.formatter = this.LOG_PRETTY ?
+            new DefaultLogFormatter() :
             this.LOG_LOGFMT ? new LogfmtFormatter() : new StructuredLogFormatter();
         this.setLevel(this.LOG_LEVEL);
     }

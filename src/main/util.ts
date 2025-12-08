@@ -16,7 +16,7 @@ export function deepClone<T>(data: T): T | null {
 }
 
 export function groupBy<T, K>(items: T[], fn: (item: T, index: number) => K): Array<[K, T[]]> {
-    const map: Map<K, T[]> = new Map();
+    const map = new Map<K, T[]>();
     for (const [i, item] of items.entries()) {
         const key = fn(item, i);
         const list = map.get(key);
@@ -53,13 +53,13 @@ export interface EntityList<T> {
     totalCount: number;
 }
 
-export function addClassMetadata<T>(key: Symbol, target: any, datum: T) {
+export function addClassMetadata<T>(key: symbol, target: any, datum: T) {
     const metadata = Reflect.getOwnMetadata(key, target) || [];
     metadata.push(datum);
     Reflect.defineMetadata(key, metadata, target);
 }
 
-export function getClassMetadata<T>(key: Symbol, target: any): T[] {
+export function getClassMetadata<T>(key: symbol, target: any): T[] {
     let result: T[] = [];
     let proto = target;
     while (proto !== Object.prototype) {
@@ -84,9 +84,9 @@ async function getPackageJson() {
         const packageJsonFile = path.join(pkgPath);
         const pkg = await fs.readFile(packageJsonFile, 'utf-8');
         return JSON.parse(pkg);
-
     } catch (error: any) {
-        const reason = error instanceof SyntaxError ? 'package.json is malformed' :
+        const reason = error instanceof SyntaxError ?
+            'package.json is malformed' :
             error.code === 'ENOENT' ? 'package.json not found' : error.message;
         throw new Exception(`Cannot get App Details: ${reason}`);
     }

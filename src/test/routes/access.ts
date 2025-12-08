@@ -26,4 +26,5 @@ export class AccessRouter extends Router {
         this.auth.checkAuthenticated();
         return ['open', 'sesame'];
     }
+
 }

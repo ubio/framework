@@ -21,7 +21,6 @@ const opts = program.opts() as Opts;
 
 main()
     .catch(err => {
-        // eslint-disable-next-line no-console
         console.error(err);
         process.exit(1);
     });
@@ -45,12 +44,13 @@ async function discoverAppClass(): Promise<typeof Application | null> {
         const appModulePath = path.join(process.cwd(), 'out/main/app.js');
         const appModule = await import(appModulePath);
         for (const obj of Object.values(appModule)) {
+            // eslint-disable-next-line no-prototype-builtins
             if (Application.isPrototypeOf(obj as any)) {
                 return obj as (typeof Application);
             }
         }
         return null;
-    } catch (err) {
+    } catch (_err) {
         return null;
     }
 }

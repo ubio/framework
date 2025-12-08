@@ -33,4 +33,5 @@ export class BarRouter extends Router {
     async create() {
         return this.ctx.request.body;
     }
+
 }

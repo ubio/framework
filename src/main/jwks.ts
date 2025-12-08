@@ -43,6 +43,7 @@ const jwksSchema = {
 const validateFunction = ajv.compile(jwksSchema);
 
 export class JwksClient {
+
     protected _cache: JwksCache | null = null;
     request: Request;
 
@@ -94,7 +95,7 @@ export class JwksClient {
         this._cache = null;
     }
 
-    protected validateResponse(res: { [k: string]: any }): SigningKeySets {
+    protected validateResponse(res: Record<string, any>): SigningKeySets {
         if (validateFunction(res) === true) {
             return res as SigningKeySets;
         }
@@ -102,6 +103,7 @@ export class JwksClient {
         const messages = errors.map(e => ajvErrorToMessage(e));
         throw new JwksValidationError(messages);
     }
+
 }
 
 export interface JwksOptions {
@@ -126,10 +128,13 @@ export interface SigningKey {
 }
 
 export class SigningKeyNotFoundError extends Exception {
+
     override message = 'Expected signing key not found in JWKS response';
+
 }
 
 export class JwksValidationError extends ClientError {
+
     override message = 'JWKS validation failed';
     constructor(messages: string[]) {
         super();
@@ -137,4 +142,5 @@ export class JwksValidationError extends ClientError {
             messages
         };
     }
+
 }
