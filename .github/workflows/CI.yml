@@ -12,12 +12,11 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v2
-    - name: use node 14
+    - name: use node 24
       uses: actions/setup-node@v2
       with:
-        node-version: '14'
-    - name: npm ci
-      run: npm config set '//registry.npmjs.org/:_authToken' '${{ secrets.NPM_TOKEN }}' && npm ci
+        node-version: '24'
+    - run: npm ci
     - run: npm run lint
     - run: npm run compile
     - run: npm test

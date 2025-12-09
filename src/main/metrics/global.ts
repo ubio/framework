@@ -6,6 +6,7 @@ const methodDurationMetric = new HistogramMetric('app_method_duration_seconds',
 export class GlobalMetrics {
 
     @metric() methodDuration = methodDurationMetric;
+
     @metric() handlerDuration = new HistogramMetric('app_handler_duration_seconds',
         'Application performance measurements');
 
