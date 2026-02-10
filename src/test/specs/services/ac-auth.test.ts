@@ -276,14 +276,17 @@ describe('AcAuthProvider', () => {
             });
 
             context('missing some info', () => {
-                it('does not return User actor when organisation_id is missing', async () => {
-                    jwt.context = {
-                        user_id: 'some-user-id',
-                        user_name: 'some-user-name'
-                    };
-                    const auth = await authProvider.provide(headers);
-                    const user = auth.getAuthToken()?.actor;
-                    assert.ok(user == null);
+                it('throws 401 when organisation_id is missing', async () => {
+                    try {
+                        jwt.context = {
+                            user_id: 'some-user-id',
+                            user_name: 'some-user-name'
+                        };
+                        await authProvider.provide(headers);
+                        throw new Error('UnexpectedSuccess');
+                    } catch (error: any) {
+                        assert.strictEqual(error.status, 401);
+                    }
                 });
             });
         });
@@ -307,25 +310,31 @@ describe('AcAuthProvider', () => {
             });
 
             context('missing required data', () => {
-                it('does not return actor when client_id is missing', async () => {
-                    jwt.context = {
-                        job_id: 'some-job-id',
-                        organisation_id: 'ubio-organisation-id',
-                    };
-                    const auth = await authProvider.provide(headers);
-                    const jobAccessToken = auth.getAuthToken()?.actor;
-                    assert.ok(jobAccessToken == null);
+                it('throws 401 when client_id is missing', async () => {
+                    try {
+                        jwt.context = {
+                            job_id: 'some-job-id',
+                            organisation_id: 'ubio-organisation-id',
+                        };
+                        await authProvider.provide(headers);
+                        throw new Error('UnexpectedSuccess');
+                    } catch (error: any) {
+                        assert.strictEqual(error.status, 401);
+                    }
                 });
 
-                it('does not return actor when organisation_id is missing', async () => {
-                    jwt.context = {
-                        job_id: 'some-job-id',
-                        client_id: 'some-client-id',
-                        client_name: 'Travel Aggregator',
-                    };
-                    const auth = await authProvider.provide(headers);
-                    const jobAccessToken = auth.getAuthToken()?.actor;
-                    assert.ok(jobAccessToken == null);
+                it('401 when organisation_id is missing', async () => {
+                    try {
+                        jwt.context = {
+                            job_id: 'some-job-id',
+                            client_id: 'some-client-id',
+                            client_name: 'Travel Aggregator',
+                        };
+                        await authProvider.provide(headers);
+                        throw new Error('UnexpectedSuccess');
+                    } catch (error: any) {
+                        assert.strictEqual(error.status, 401);
+                    }
                 });
             });
         });

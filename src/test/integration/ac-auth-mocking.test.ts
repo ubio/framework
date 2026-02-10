@@ -25,13 +25,12 @@ describe('Mocking AcAuth', () => {
             const mesh = super.createGlobalScope();
             mesh.constant(AuthProvider, {
                 async provide() {
-                    return new AuthContext(new AcAuth({
-                        jwtContext: {
-                            organisation_id: 'foo',
-                            service_account_id: 'service-account-worker',
-                            service_account_name: 'Bot',
-                        }
-                    }));
+                    const token = new AcAuth({
+                        organisation_id: 'foo',
+                        service_account_id: 'service-account-worker',
+                        service_account_name: 'Bot',
+                    });
+                    return new AuthContext(token);
                 }
             });
             return mesh;
