@@ -47,11 +47,9 @@ export class AcAuthProvider extends AuthProvider<AcAuth> {
                 organisation_id: organisationIdHeader,
                 ...payload.context
             };
-            return new AcAuth({
-                jwtContext: data,
-            });
-        } catch (err) {
-            this.logger.warn(`Authentication from token failed`, { details: err });
+            return new AcAuth(data);
+        } catch (error) {
+            this.logger.warn(`Authentication from token failed`, { error });
             throw new AuthenticationError();
         }
     }

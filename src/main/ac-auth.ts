@@ -1,9 +1,4 @@
 import { ClientError } from './exception.js';
-import { AuthToken } from './services/auth-context.js';
-
-export interface AcAuthSpec {
-    jwtContext?: AcJwtContext;
-}
 
 export interface AcJwtContext {
     organisation_id?: string;
@@ -50,20 +45,16 @@ export interface AcJobAccessToken {
     clientName: string;
 }
 
-export class AcAuth implements AuthToken {
+export class AcAuth {
 
-    actor: AcActor | null = null;
+    actor: AcActor;
 
-    constructor(spec: AcAuthSpec = {}) {
-        this.actor = spec.jwtContext == null ? null : this.parseActor(spec.jwtContext);
-    }
-
-    isValid(): boolean {
-        return this.actor != null;
+    constructor(jwtContext: AcJwtContext) {
+        this.actor = this.parseActor(jwtContext);
     }
 
     getOrganisationId(): string | null {
-        return this.actor?.organisationId ?? null;
+        return this.actor.organisationId ?? null;
     }
 
     requireOrganisationId(): string {
@@ -75,10 +66,10 @@ export class AcAuth implements AuthToken {
     }
 
     getClientId(): string | null {
-        if (this.actor?.type === 'Client') {
+        if (this.actor.type === 'Client') {
             return this.actor.id;
         }
-        if (this.actor?.type === 'ServiceAccount' && this.actor.clientId) {
+        if (this.actor.type === 'ServiceAccount' && this.actor.clientId) {
             return this.actor.clientId;
         }
         return null;
@@ -96,11 +87,15 @@ export class AcAuth implements AuthToken {
 
     protected parseActor(jwtContext: AcJwtContext) {
         // Note: order matters
-        return this.parseServiceAccount(jwtContext) ??
+        const actor = this.parseServiceAccount(jwtContext) ??
             this.parseJobAccessToken(jwtContext) ??
             this.parseClient(jwtContext) ??
-            this.parseUser(jwtContext) ??
-            null;
+            this.parseUser(jwtContext);
+        if (actor == null) {
+            // TODO find what AcAuthProvider throws when isAuthenticated check is not met
+            throw new InvalidJwtTokenError('Could not parse actor from JWT payload');
+        }
+        return actor;
     }
 
     protected parseServiceAccount(jwtContext: AcJwtContext): AcServiceAccount | null {
@@ -166,5 +161,11 @@ export class AcAuth implements AuthToken {
 export class AccessForbidden extends ClientError {
 
     override status = 403;
+
+}
+
+export class InvalidJwtTokenError extends ClientError {
+
+    override status = 401;
 
 }
