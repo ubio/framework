@@ -1,12 +1,11 @@
 import 'reflect-metadata';
 
+import { InitializationError } from '@nodescript/errors';
 import { ErrorObject as AjvErrorObject } from 'ajv';
 import { promises as fs } from 'fs';
 import { Mesh, ServiceConstructor } from 'mesh-ioc';
 import path from 'path';
 import { v4 as uuid } from 'uuid';
-
-import { Exception } from './exception.js';
 
 export type Constructor<T> = new (...args: any[]) => T;
 export type AnyConstructor = new (...args: any[]) => {};
@@ -88,7 +87,7 @@ async function getPackageJson() {
         const reason = error instanceof SyntaxError ?
             'package.json is malformed' :
             error.code === 'ENOENT' ? 'package.json not found' : error.message;
-        throw new Exception(`Cannot get App Details: ${reason}`);
+        throw new InitializationError(`Cannot get App Details: ${reason}`);
     }
 }
 

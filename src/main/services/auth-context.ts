@@ -1,32 +1,13 @@
-import { ClientError } from '@nodescript/errors';
+import { AuthenticationRequiredError } from '@nodescript/errors';
 
-export class AuthContext<T> {
+export abstract class AuthContext {
 
-    constructor(private authToken: T) {}
-
-    isAuthenticated() {
-        return this.authToken != null;
-    }
+    abstract isAuthenticated(): boolean;
 
     checkAuthenticated(): void {
         if (!this.isAuthenticated()) {
-            throw new AuthenticationError();
+            throw new AuthenticationRequiredError();
         }
     }
-
-    getAuthToken(): T {
-        return this.authToken;
-    }
-
-    setAuthToken(authToken: T): void {
-        this.authToken = authToken;
-    }
-
-}
-
-export class AuthenticationError extends ClientError {
-
-    override status = 401;
-    override message = 'Authentication is required';
 
 }

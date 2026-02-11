@@ -1,9 +1,18 @@
+import Koa from 'koa';
+import { Constructor, Mesh } from 'mesh-ioc';
+
 import { AuthContext } from './auth-context.js';
 
-export type AuthHeaders = Record<string, string | string[] | undefined>;
+export abstract class AuthProvider<T extends AuthContext> {
 
-export abstract class AuthProvider<T> {
+    abstract authContextClass: Constructor<T>;
 
-    abstract provide(headers?: AuthHeaders): Promise<AuthContext<T | null>>;
+    abstract createAuthContext(ctx: Koa.Context): Promise<AuthContext>;
+
+    async provide(ctx: Koa.Context, scope: Mesh) {
+        const authContext = await this.createAuthContext(ctx);
+        scope.constant(this.authContextClass, authContext);
+        scope.alias(AuthContext, this.authContextClass);
+    }
 
 }

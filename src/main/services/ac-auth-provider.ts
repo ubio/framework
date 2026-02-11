@@ -1,12 +1,13 @@
+import { AuthenticationRequiredError } from '@nodescript/errors';
 import { Logger } from '@nodescript/logger';
 import { Request } from '@ubio/request';
+import Koa from 'koa';
 import { config } from 'mesh-config';
 import { dep } from 'mesh-ioc';
 
 import { AcAuth } from '../ac-auth.js';
 import { getSingleValue } from '../util.js';
-import { AuthContext, AuthenticationError } from './auth-context.js';
-import { AuthHeaders, AuthProvider } from './auth-provider.js';
+import { AuthProvider } from './auth-provider.js';
 import { JwtService } from './jwt.js';
 
 export class AcAuthProvider extends AuthProvider<AcAuth> {
@@ -30,44 +31,45 @@ export class AcAuthProvider extends AuthProvider<AcAuth> {
         });
     }
 
-    async provide(headers: AuthHeaders) {
-        const token = await this.getToken(headers);
+    authContextClass = AcAuth;
+
+    async createAuthContext(ctx: Koa.Context) {
+        const token = await this.getToken(ctx);
         if (token) {
-            const acAuth = await this.createAuthFromToken(headers, token);
-            return new AuthContext(acAuth);
+            const organisationId = ctx.headers['x-ubio-organisation-id'] as string | undefined;
+            return await this.createAuthFromToken(organisationId, token);
         }
-        return new AuthContext(null);
+        return new AcAuth(null);
     }
 
-    protected async createAuthFromToken(headers: AuthHeaders, token: string): Promise<AcAuth> {
-        const organisationIdHeader = headers['x-ubio-organisation-id'] as string | undefined;
+    protected async createAuthFromToken(organisationId: string | undefined, token: string): Promise<AcAuth> {
         try {
             const payload = await this.jwt.decodeAndVerify(token);
             const data = {
-                organisation_id: organisationIdHeader,
+                organisation_id: organisationId,
                 ...payload.context
             };
             return new AcAuth(data);
         } catch (error) {
             this.logger.warn(`Authentication from token failed`, { error });
-            throw new AuthenticationError();
+            throw new AuthenticationRequiredError();
         }
     }
 
-    protected async getToken(headers: AuthHeaders) {
+    protected async getToken(ctx: Koa.Context) {
         const authHeaderName = this.AC_AUTH_HEADER_NAME;
-        const upstreamAuth = getSingleValue(headers[authHeaderName]);
+        const upstreamAuth = getSingleValue(ctx.headers[authHeaderName]);
         if (upstreamAuth) {
             const [prefix, token] = upstreamAuth.split(' ');
             if (prefix !== 'Bearer' || !token) {
                 this.logger.warn(`Incorrect authorization header`, {
                     details: { prefix, token }
                 });
-                throw new AuthenticationError('Incorrect authorization header');
+                throw new AuthenticationRequiredError('Incorrect authorization header');
             }
             return token;
         }
-        const authorization = getSingleValue(headers['authorization']);
+        const authorization = getSingleValue(ctx.headers['authorization']);
         if (authorization) {
             return await this.getTokenFromAuthMiddleware(authorization);
         }
@@ -91,7 +93,7 @@ export class AcAuthProvider extends AuthProvider<AcAuth> {
                 return token;
             } catch (error: any) {
                 this.logger.warn('AuthMiddleware authentication failed', { ...error });
-                throw new AuthenticationError();
+                throw new AuthenticationRequiredError();
             }
         }
         return cached.token;
@@ -105,14 +107,6 @@ export class AcAuthProvider extends AuthProvider<AcAuth> {
                 AcAuthProvider.middlewareTokensCache.delete(k);
             }
         }
-    }
-
-}
-
-export class BypassAcAuthProvider extends AuthProvider<AcAuth> {
-
-    async provide() {
-        return new AuthContext(null);
     }
 
 }

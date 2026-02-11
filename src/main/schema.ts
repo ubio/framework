@@ -1,7 +1,7 @@
+import { ClientError } from '@nodescript/errors';
 import Ajv, { ErrorObject, Options, ValidateFunction } from 'ajv';
 import addFormats from 'ajv-formats';
 
-import { ClientError } from './exception.js';
 import { JsonSchema } from './schema-types.js';
 import { ajvErrorToMessage } from './util.js';
 
@@ -98,6 +98,9 @@ export class Schema<T> {
 export class ValidationError extends ClientError {
 
     override status = 400;
+
+    details: Record<string, any>;
+
     constructor(messages: string[]) {
         super(`Validation failed:\n${messages.map(_ => `    - ${_}`).join('\n')}`);
         this.details = {

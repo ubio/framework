@@ -1,9 +1,8 @@
+import { AccessDeniedError } from '@nodescript/errors';
 import { Logger } from '@nodescript/logger';
 import { Redis } from 'ioredis';
 import { config } from 'mesh-config';
 import { dep } from 'mesh-ioc';
-
-import { AccessForbidden } from './ac-auth.js';
 
 export interface TokenServiceRestriction {
     serviceName: string;
@@ -54,11 +53,11 @@ export class TrialClient {
     async requireValidServiceRestriction(token: TrialToken, serviceName: string) {
         const serviceRestriction = token.serviceRestrictions.find((s: TokenServiceRestriction) => s.serviceName === serviceName);
         if (!serviceRestriction) {
-            throw new AccessForbidden('Service access not configured on token');
+            throw new AccessDeniedError('Service access not configured on token');
         }
         const requestCount = await this.getRequestCount(token.clientId, serviceName);
         if (requestCount >= serviceRestriction.requestLimit) {
-            throw new AccessForbidden('Trial token has exceeded request limit for service');
+            throw new AccessDeniedError('Trial token has exceeded request limit for service');
         }
     }
 
@@ -71,7 +70,7 @@ export class TrialClient {
         const redisKey = this.getServiceKey(clientId, serviceName);
         const requestCountStr = await this.redisClient.hget(redisKey, 'requestCount');
         if (requestCountStr == null) {
-            throw new AccessForbidden('Service access for token not configured');
+            throw new AccessDeniedError('Service access for token not configured');
         }
         return Number(requestCountStr);
     }

@@ -1,4 +1,4 @@
-import { AfterHook, BodyParam, Exception, Get, Middleware, PathParam, Post, Put, Router } from '../../main/index.js';
+import { AfterHook, BodyParam, Get, Middleware, PathParam, Post, Put, Router } from '../../main/index.js';
 
 export class FooRouter extends Router {
 
@@ -78,12 +78,12 @@ export class FooRouter extends Router {
 
     @Get({ path: '/foo-error' })
     async throwError() {
-        throw new Exception();
+        throw new Error();
     }
 
     @Get({ path: '/foo-error-handled' })
     async throwErrorHandled() {
-        throw new Exception();
+        throw new Error();
     }
 
     @Get({ path: '/foo/{fooId}' })

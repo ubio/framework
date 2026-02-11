@@ -6,7 +6,7 @@ import { Mesh } from 'mesh-ioc';
 
 import {
     AcAuthProvider,
-    AuthenticationError,
+    AuthenticationRequiredError,
     JwtService,
     StandardLogger,
 } from '../../../main/index.js';
@@ -16,7 +16,7 @@ describe('AcAuthProvider', () => {
     let mesh: Mesh;
     let fetchMock: request.FetchMock;
     let authProvider: AcAuthProvider;
-    let headers: any = {};
+    let ctx: any = {};
     let jwt: any = {};
 
     beforeEach(() => {
@@ -27,7 +27,7 @@ describe('AcAuthProvider', () => {
         mesh.constant(JwtService, {
             async decodeAndVerify(token: string) {
                 if (token !== 'jwt-token-here') {
-                    throw new AuthenticationError();
+                    throw new AuthenticationRequiredError();
                 }
                 return jwt;
             }
@@ -45,34 +45,44 @@ describe('AcAuthProvider', () => {
 
     afterEach(() => {
         jwt = {};
-        headers = {};
+        ctx = {
+            headers: {}
+        };
         AcAuthProvider.middlewareTokensCache = new Map();
     });
 
     describe('x-ubio-auth header exists', () => {
         beforeEach(() => {
             const authHeader = mesh.resolve(AcAuthProvider).AC_AUTH_HEADER_NAME;
-            headers[authHeader] = 'Bearer jwt-token-here';
+            ctx = {
+                headers: {
+                    [authHeader]: 'Bearer jwt-token-here'
+                }
+            };
         });
 
         it('does not send request to authMiddleware', async () => {
-            await authProvider.provide(headers);
+            await authProvider.createAuthContext(ctx);
             assert.strictEqual(fetchMock.spy.called, false);
         });
 
         it('sets authenticated = true', async () => {
-            const auth = await authProvider.provide(headers);
+            const auth = await authProvider.createAuthContext(ctx);
             assert(auth.isAuthenticated());
         });
 
         it('throws when jwt is not valid', async () => {
             const authHeader = mesh.resolve(AcAuthProvider).AC_AUTH_HEADER_NAME;
-            headers[authHeader] = 'Bearer unknown-jwt-token';
+            ctx = {
+                headers: {
+                    [authHeader]: 'Bearer unknown-jwt-token',
+                }
+            };
             try {
-                await authProvider.provide(headers);
+                await authProvider.createAuthContext(ctx);
                 throw new Error('UnexpectedSuccess');
             } catch (err: any) {
-                assert.strictEqual(err.name, 'AuthenticationError');
+                assert.strictEqual(err.name, 'AuthenticationRequiredError');
             }
         });
 
@@ -80,9 +90,13 @@ describe('AcAuthProvider', () => {
 
     describe('middleware auth', () => {
         it('sends a request to auth middleware with Authorization header', async () => {
-            headers['authorization'] = 'AUTH';
+            ctx = {
+                headers: {
+                    'authorization': 'AUTH'
+                }
+            };
             assert.strictEqual(fetchMock.spy.called, false);
-            const auth = await authProvider.provide(headers);
+            const auth = await authProvider.createAuthContext(ctx);
             assert.strictEqual(fetchMock.spy.called, true);
             const requestHeaders = fetchMock.spy.params[0]?.fetchOptions.headers;
             assert.strictEqual(requestHeaders?.authorization, 'AUTH');
@@ -97,9 +111,13 @@ describe('AcAuthProvider', () => {
                 token: 'jwt-token-here',
                 authorisedAt: Date.now() - ttl + margin
             });
-            headers['authorization'] = 'AUTH';
+            ctx = {
+                headers: {
+                    'authorization': 'AUTH'
+                }
+            };
             assert.strictEqual(fetchMock.spy.called, false);
-            const auth = await authProvider.provide(headers);
+            const auth = await authProvider.createAuthContext(ctx);
             assert.strictEqual(fetchMock.spy.called, false);
             assert.strictEqual(auth.isAuthenticated(), true);
         });
@@ -108,19 +126,30 @@ describe('AcAuthProvider', () => {
             const ttl = 60000;
             const margin = 1000;
             AcAuthProvider.middlewareCacheTtl = ttl;
-            AcAuthProvider.middlewareTokensCache.set('AUTH', { token: 'jwt-token-here', authorisedAt: Date.now() - ttl - margin });
-            headers['authorization'] = 'AUTH';
+            AcAuthProvider.middlewareTokensCache.set('AUTH', {
+                token: 'jwt-token-here',
+                authorisedAt: Date.now() - ttl - margin
+            });
+            ctx = {
+                headers: {
+                    'authorization': 'AUTH'
+                }
+            };
             assert.strictEqual(fetchMock.spy.called, false);
-            const auth = await authProvider.provide(headers);
+            const auth = await authProvider.createAuthContext(ctx);
             assert.strictEqual(fetchMock.spy.called, true);
             assert.strictEqual(auth.isAuthenticated(), true);
         });
 
         it('throws 401 if upstream request fails', async () => {
             authProvider.clientRequest.config.fetch = request.fetchMock({ status: 400 }, {}, new Error('RequestFailed'));
-            headers['authorization'] = 'AUTH';
+            ctx = {
+                headers: {
+                    'authorization': 'AUTH'
+                }
+            };
             try {
-                await authProvider.provide(headers);
+                await authProvider.createAuthContext(ctx);
                 throw new Error('UnexpectedSuccess');
             } catch (err: any) {
                 assert.strictEqual(err.status, 401);
@@ -130,43 +159,60 @@ describe('AcAuthProvider', () => {
 
     context('authorization header does not exist', () => {
         it('leaves auth unauthenticated without throwing', async () => {
-            const auth = await authProvider.provide(headers);
+            const auth = await authProvider.createAuthContext(ctx);
             assert.strictEqual(auth.isAuthenticated(), false);
         });
 
     });
 
     describe('acAuth', () => {
+
         beforeEach(() => {
             const authHeader = mesh.resolve(AcAuthProvider).AC_AUTH_HEADER_NAME;
-            headers[authHeader] = 'Bearer jwt-token-here';
+            ctx = {
+                headers: {
+                    [authHeader]: 'Bearer jwt-token-here'
+                }
+            };
         });
 
         describe('organisation_id', () => {
             context('jwt has `organisation_id`', () => {
                 it('sets auth.organisationId', async () => {
                     jwt.context.organisation_id = 'some-user-org-id';
-                    const auth = await authProvider.provide(headers);
-                    const organisationId = auth.getAuthToken()?.getOrganisationId();
+                    const auth = await authProvider.createAuthContext(ctx);
+                    const organisationId = auth.getOrganisationId();
                     assert.strictEqual(organisationId, 'some-user-org-id');
                 });
             });
 
-            context('x-ubio-organisation-id presents in header', () => {
+            context('x-ubio-organisation-id exists in headers', () => {
                 it('sets auth.organisationId', async () => {
-                    headers['x-ubio-organisation-id'] = 'org-id-from-header';
-                    const auth = await authProvider.provide(headers);
-                    const organisationId = auth.getAuthToken()?.getOrganisationId();
+                    const authHeader = mesh.resolve(AcAuthProvider).AC_AUTH_HEADER_NAME;
+                    ctx = {
+                        headers: {
+                            'x-ubio-organisation-id': 'org-id-from-header',
+                            [authHeader]: 'Bearer jwt-token-here'
+                        }
+                    };
+                    const auth = await authProvider.createAuthContext(ctx);
+                    const organisationId = auth.getOrganisationId();
                     assert.strictEqual(organisationId, 'org-id-from-header');
                 });
             });
 
             context('both jwt and x-ubio-organisation-id present', () => {
                 it('sets auth.organisationId with value from jwt', async () => {
+                    const authHeader = mesh.resolve(AcAuthProvider).AC_AUTH_HEADER_NAME;
                     jwt.context['organisation_id'] = 'org-id-from-jwt';
-                    headers['x-ubio-organisation-id'] = 'org-id-from-header';
-                    const auth = await authProvider.provide(headers);
-                    const organisationId = auth.getAuthToken()?.getOrganisationId();
+                    ctx = {
+                        headers: {
+                            'x-ubio-organisation-id': 'org-id-from-header',
+                            [authHeader]: 'Bearer jwt-token-here'
+                        }
+                    };
+                    const auth = await authProvider.createAuthContext(ctx);
+                    const organisationId = auth.getOrganisationId();
                     assert.strictEqual(organisationId, 'org-id-from-jwt');
                 });
             });
@@ -179,8 +225,8 @@ describe('AcAuthProvider', () => {
                         service_account_id: 'some-service-account-id',
                         service_account_name: 'Bot'
                     };
-                    const auth = await authProvider.provide(headers);
-                    const serviceAccount = auth.getAuthToken()?.actor;
+                    const auth = await authProvider.createAuthContext(ctx);
+                    const serviceAccount = auth.actor;
                     assert.ok(serviceAccount?.type === 'ServiceAccount');
                     assert.strictEqual(serviceAccount.id, 'some-service-account-id');
                     assert.strictEqual(serviceAccount.name, 'Bot');
@@ -192,8 +238,8 @@ describe('AcAuthProvider', () => {
                         service_account_name: 'Bot',
                         organisation_id: 'ubio-organisation-id',
                     };
-                    const auth = await authProvider.provide(headers);
-                    const serviceAccount = auth.getAuthToken()?.actor;
+                    const auth = await authProvider.createAuthContext(ctx);
+                    const serviceAccount = auth.actor;
                     assert.ok(serviceAccount?.type === 'ServiceAccount');
                     assert.strictEqual(serviceAccount.id, 'some-service-account-id');
                     assert.strictEqual(serviceAccount.name, 'Bot');
@@ -206,8 +252,8 @@ describe('AcAuthProvider', () => {
                         client_id: 'ClientA',
                         client_name: 'Ron Swanson',
                     };
-                    const auth = await authProvider.provide(headers);
-                    const serviceAccount = auth.getAuthToken()?.actor;
+                    const auth = await authProvider.createAuthContext(ctx);
+                    const serviceAccount = auth.actor;
                     assert.ok(serviceAccount?.type === 'ServiceAccount');
                     assert.strictEqual(serviceAccount.clientId, 'ClientA');
                     assert.strictEqual(serviceAccount.clientName, 'Ron Swanson');
@@ -223,23 +269,27 @@ describe('AcAuthProvider', () => {
                         client_name: 'UbioAir',
                         organisation_id: 'ubio-organisation-id',
                     };
-                    const auth = await authProvider.provide(headers);
-                    const client = auth.getAuthToken()?.actor;
+                    const auth = await authProvider.createAuthContext(ctx);
+                    const client = auth.actor;
                     assert.ok(client?.type === 'Client');
                     assert.strictEqual(client.id, 'some-client-id');
                     assert.strictEqual(client.name, 'UbioAir');
                 });
 
                 it('does not return Client actor if job_id is present', async () => {
-                    headers['authorization'] = 'AUTH';
+                    ctx = {
+                        headers: {
+                            'authorization': 'AUTH'
+                        }
+                    };
                     jwt.context = {
                         job_id: 'some-job-id-from-cliend-ubio-air',
                         organisation_id: 'ubio-organisation-id',
                         client_id: 'some-client-id',
                         client_name: 'UbioAir',
                     };
-                    const auth = await authProvider.provide(headers);
-                    const actor = auth.getAuthToken()?.actor;
+                    const auth = await authProvider.createAuthContext(ctx);
+                    const actor = auth.actor;
                     assert.ok(actor?.type === 'JobAccessToken');
                 });
             });
@@ -253,8 +303,8 @@ describe('AcAuthProvider', () => {
                         user_name: 'Travel Aggregator',
                         organisation_id: 'ubio-organisation-id',
                     };
-                    const auth = await authProvider.provide(headers);
-                    const user = auth.getAuthToken()?.actor;
+                    const auth = await authProvider.createAuthContext(ctx);
+                    const user = auth.actor;
                     assert.ok(user?.type === 'User');
                     assert.strictEqual(user.id, 'some-user-id');
                     assert.strictEqual(user.name, 'Travel Aggregator');
@@ -266,8 +316,8 @@ describe('AcAuthProvider', () => {
                         user_id: 'some-user-id',
                         organisation_id: 'ubio-organisation-id',
                     };
-                    const auth = await authProvider.provide(headers);
-                    const user = auth.getAuthToken()?.actor;
+                    const auth = await authProvider.createAuthContext(ctx);
+                    const user = auth.actor;
                     assert.ok(user?.type === 'User');
                     assert.strictEqual(user.id, 'some-user-id');
                     assert.strictEqual(user.name, '');
@@ -282,7 +332,7 @@ describe('AcAuthProvider', () => {
                             user_id: 'some-user-id',
                             user_name: 'some-user-name'
                         };
-                        await authProvider.provide(headers);
+                        await authProvider.createAuthContext(ctx);
                         throw new Error('UnexpectedSuccess');
                     } catch (error: any) {
                         assert.strictEqual(error.status, 401);
@@ -300,8 +350,8 @@ describe('AcAuthProvider', () => {
                         client_name: 'UbioAir',
                         organisation_id: 'ubio-organisation-id',
                     };
-                    const auth = await authProvider.provide(headers);
-                    const jobAccessToken = auth.getAuthToken()?.actor;
+                    const auth = await authProvider.createAuthContext(ctx);
+                    const jobAccessToken = auth.actor;
                     assert.ok(jobAccessToken?.type === 'JobAccessToken');
                     assert.strictEqual(jobAccessToken.jobId, 'some-job-id');
                     assert.strictEqual(jobAccessToken.clientId, 'some-client-id');
@@ -316,7 +366,7 @@ describe('AcAuthProvider', () => {
                             job_id: 'some-job-id',
                             organisation_id: 'ubio-organisation-id',
                         };
-                        await authProvider.provide(headers);
+                        await authProvider.createAuthContext(ctx);
                         throw new Error('UnexpectedSuccess');
                     } catch (error: any) {
                         assert.strictEqual(error.status, 401);
@@ -330,7 +380,7 @@ describe('AcAuthProvider', () => {
                             client_id: 'some-client-id',
                             client_name: 'Travel Aggregator',
                         };
-                        await authProvider.provide(headers);
+                        await authProvider.createAuthContext(ctx);
                         throw new Error('UnexpectedSuccess');
                     } catch (error: any) {
                         assert.strictEqual(error.status, 401);

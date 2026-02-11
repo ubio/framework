@@ -4,6 +4,7 @@ import assert from 'assert';
 import { JwksClient } from '../../main/jwks.js';
 
 describe('JwksClient', () => {
+
     describe('getSigningKey', () => {
         let jwksClient: JwksClient;
         let fetch: FetchMock;

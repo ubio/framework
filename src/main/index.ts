@@ -3,7 +3,6 @@ import * as util from './util.js';
 export * from './ac-auth.js';
 export * from './application.js';
 export * from './doc.js';
-export * from './exception.js';
 export * from './http.js';
 export * from './logger.js';
 export * from './metrics/index.js';
@@ -13,6 +12,7 @@ export * from './schema.js';
 export * from './services/index.js';
 export * from './trial.js';
 export * from './util.js';
+export * from '@nodescript/errors';
 export * from '@nodescript/logger';
 export * from 'mesh-config';
 

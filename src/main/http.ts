@@ -1,4 +1,5 @@
 import cors from '@koa/cors';
+import { ClientError } from '@nodescript/errors';
 import { LogData, Logger, LogLevel } from '@nodescript/logger';
 import http from 'http';
 import https from 'https';
@@ -12,10 +13,9 @@ import { dep, Mesh } from 'mesh-ioc';
 import stoppable, { StoppableServer } from 'stoppable';
 import { constants } from 'zlib';
 
-import { ClientError } from './exception.js';
 import { standardMiddleware } from './middleware.js';
 import { Router } from './router.js';
-import { AuthContext, AuthProvider } from './services/index.js';
+import { AuthProvider } from './services/index.js';
 import { findMeshInstances } from './util.js';
 
 interface MiddlewareSpec {
@@ -185,8 +185,7 @@ export class HttpServer extends Koa {
         return async (ctx: Koa.Context, next: Koa.Next) => {
             const mesh: Mesh = ctx.mesh;
             const provider = mesh.resolve(AuthProvider);
-            const authContext = await provider.provide(ctx.headers);
-            mesh.constant(AuthContext, authContext);
+            await provider.provide(ctx, mesh);
             return next();
         };
     }
