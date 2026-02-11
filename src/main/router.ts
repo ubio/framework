@@ -1,3 +1,4 @@
+import { ClientError, InitializationError } from '@nodescript/errors';
 import { Logger } from '@nodescript/logger';
 import { matchTokens, parsePath, PathToken } from '@nodescript/pathmatcher';
 import Ajv, { ValidateFunction as AjvValidateFunction } from 'ajv';
@@ -6,7 +7,6 @@ import * as koa from 'koa';
 import { config } from 'mesh-config';
 import { dep } from 'mesh-ioc';
 
-import { ClientError, Exception } from './exception.js';
 import { GlobalMetrics } from './metrics/global.js';
 import { ajvErrorToMessage, AnyConstructor, Constructor, deepClone } from './util.js';
 
@@ -77,7 +77,7 @@ function routeDecorator(method: string, spec: RouteSpec, role = RouteRole.ENDPOI
         const bodyParams = params.filter(_ => _.source === 'body');
         if (spec.requestBodySchema) {
             if (bodyParams.length > 0) {
-                throw new Exception(
+                throw new InitializationError(
                     `${method} ${path}: BodyParams are only supported if requestBodySchema is not specified`);
             }
         }
@@ -274,7 +274,7 @@ function validateRouteDefinition(ep: RouteDefinition) {
     const paramNamesSet = new Set<string>();
     for (const param of ep.params) {
         if (paramNamesSet.has(param.name)) {
-            throw new Exception(
+            throw new InitializationError(
                 `${ep.method} ${ep.path}: Parameter ${param.name} is declared more than once`
             );
         }
@@ -420,6 +420,8 @@ export class RequestParametersValidationError extends ClientError {
 
     override status = 400;
 
+    details: Record<string, any>;
+
     constructor(messages: string[]) {
         super(`Invalid request parameters:\n${messages.map(_ => `    - ${_}`).join('\n')}`);
         this.details = { messages };
@@ -430,6 +432,8 @@ export class RequestParametersValidationError extends ClientError {
 export class ResponseValidationError extends ClientError {
 
     override status = 500;
+
+    details: Record<string, any>;
 
     constructor(messages: string[]) {
         super(`Response body is not valid:\n${messages.map(_ => `    - ${_}`).join('\n')}`);

@@ -1,8 +1,7 @@
+import { ServerError } from '@nodescript/errors';
 import { StructuredLogHttpRequest } from '@nodescript/logger';
 import { Context } from 'koa';
 import { v4 as uuid } from 'uuid';
-
-import { ServerError } from './exception.js';
 
 export async function standardMiddleware(ctx: Context, next: () => Promise<any>) {
     let error: any = undefined;

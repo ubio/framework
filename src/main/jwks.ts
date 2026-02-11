@@ -1,7 +1,7 @@
+import { BaseError } from '@nodescript/errors';
 import { Request } from '@ubio/request';
 import Ajv from 'ajv';
 
-import { ClientError, Exception } from './exception.js';
 import { ajvErrorToMessage } from './util.js';
 
 const ajv = new Ajv.default({
@@ -40,7 +40,7 @@ const jwksSchema = {
     additionalProperties: true
 };
 
-const validateFunction = ajv.compile(jwksSchema);
+const validateFunction = ajv.compile<SigningKeySets>(jwksSchema);
 
 export class JwksClient {
 
@@ -95,9 +95,9 @@ export class JwksClient {
         this._cache = null;
     }
 
-    protected validateResponse(res: Record<string, any>): SigningKeySets {
+    protected validateResponse(res: any): SigningKeySets {
         if (validateFunction(res) === true) {
-            return res as SigningKeySets;
+            return res;
         }
         const errors = validateFunction.errors || [];
         const messages = errors.map(e => ajvErrorToMessage(e));
@@ -127,20 +127,22 @@ export interface SigningKey {
     k: string;
 }
 
-export class SigningKeyNotFoundError extends Exception {
+export class SigningKeyNotFoundError extends BaseError {
 
     override message = 'Expected signing key not found in JWKS response';
 
 }
 
-export class JwksValidationError extends ClientError {
+export class JwksValidationError extends BaseError {
 
     override message = 'JWKS validation failed';
+
+    details: Record<string, any>;
+
     constructor(messages: string[]) {
         super();
-        this.details = {
-            messages
-        };
+        this.message = `JWKS validation failed: ${messages.join(', ')}`;
+        this.details = { messages };
     }
 
 }

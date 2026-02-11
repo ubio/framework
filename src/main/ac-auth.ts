@@ -1,4 +1,6 @@
-import { ClientError } from './exception.js';
+import { AccessDeniedError, AuthenticationRequiredError } from '@nodescript/errors';
+
+import { AuthContext } from './services/auth-context.js';
 
 export interface AcJwtContext {
     organisation_id?: string;
@@ -45,31 +47,36 @@ export interface AcJobAccessToken {
     clientName: string;
 }
 
-export class AcAuth {
+export class AcAuth extends AuthContext {
 
-    actor: AcActor;
+    actor: AcActor | null;
 
-    constructor(jwtContext: AcJwtContext) {
-        this.actor = this.parseActor(jwtContext);
+    constructor(readonly jwtContext: AcJwtContext | null) {
+        super();
+        this.actor = jwtContext ? this.parseActor(jwtContext) : null;
+    }
+
+    isAuthenticated() {
+        return this.actor != null;
     }
 
     getOrganisationId(): string | null {
-        return this.actor.organisationId ?? null;
+        return this.actor?.organisationId ?? null;
     }
 
     requireOrganisationId(): string {
         const organisationId = this.getOrganisationId();
         if (!organisationId) {
-            throw new AccessForbidden('organisationId is required');
+            throw new AccessDeniedError('organisationId is required');
         }
         return organisationId;
     }
 
     getClientId(): string | null {
-        if (this.actor.type === 'Client') {
+        if (this.actor?.type === 'Client') {
             return this.actor.id;
         }
-        if (this.actor.type === 'ServiceAccount' && this.actor.clientId) {
+        if (this.actor?.type === 'ServiceAccount' && this.actor?.clientId) {
             return this.actor.clientId;
         }
         return null;
@@ -78,7 +85,7 @@ export class AcAuth {
     requireClientId(): string {
         const clientId = this.getClientId();
         if (!clientId) {
-            throw new AccessForbidden('clientId is required');
+            throw new AccessDeniedError('clientId is required');
         }
         return clientId;
     }
@@ -92,8 +99,7 @@ export class AcAuth {
             this.parseClient(jwtContext) ??
             this.parseUser(jwtContext);
         if (actor == null) {
-            // TODO find what AcAuthProvider throws when isAuthenticated check is not met
-            throw new InvalidJwtTokenError('Could not parse actor from JWT payload');
+            throw new AuthenticationRequiredError('Could not parse actor from JWT payload');
         }
         return actor;
     }
@@ -155,17 +161,5 @@ export class AcAuth {
         }
         return null;
     }
-
-}
-
-export class AccessForbidden extends ClientError {
-
-    override status = 403;
-
-}
-
-export class InvalidJwtTokenError extends ClientError {
-
-    override status = 401;
 
 }

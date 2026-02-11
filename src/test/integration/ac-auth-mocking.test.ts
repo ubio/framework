@@ -2,19 +2,22 @@ import assert from 'assert';
 import { dep } from 'mesh-ioc';
 import supertest from 'supertest';
 
-import { AcAuth, Application, AuthContext, AuthProvider, Get, Router } from '../../main/index.js';
+import { AcAuth, Application, AuthProvider, Get, Router } from '../../main/index.js';
 
 describe('Mocking AcAuth', () => {
 
     class MyRouter extends Router {
 
-        @dep() protected auth!: AuthContext<AcAuth>;
+        @dep() protected auth!: AcAuth;
 
         @Get({
             path: '/foo'
         })
         foo() {
-            return { ...this.auth.getAuthToken() };
+            return {
+                actor: this.auth.actor,
+                jwtContext: this.auth.jwtContext,
+            };
         }
 
     }
@@ -23,14 +26,14 @@ describe('Mocking AcAuth', () => {
 
         override createGlobalScope() {
             const mesh = super.createGlobalScope();
-            mesh.constant(AuthProvider, {
-                async provide() {
-                    const token = new AcAuth({
+            mesh.service(AuthProvider, class extends AuthProvider<AcAuth> {
+                override authContextClass = AcAuth;
+                async createAuthContext() {
+                    return new AcAuth({
                         organisation_id: 'foo',
                         service_account_id: 'service-account-worker',
                         service_account_name: 'Bot',
                     });
-                    return new AuthContext(token);
                 }
             });
             return mesh;
@@ -57,7 +60,12 @@ describe('Mocking AcAuth', () => {
                 id: 'service-account-worker',
                 name: 'Bot',
                 organisationId: 'foo',
-            }
+            },
+            jwtContext: {
+                organisation_id: 'foo',
+                service_account_id: 'service-account-worker',
+                service_account_name: 'Bot',
+            },
         });
     });
 });
