@@ -1,9 +1,9 @@
-export * as errors from '@flexent/errors';
-export * as httpRouter from '@flexent/http-router';
-export * as httpServer from '@flexent/http-server';
-export * as initDecorator from '@flexent/init-decorator';
-export * as logger from '@flexent/logger';
-export * as metrics from '@flexent/metrics';
-export * as pathmatcher from '@flexent/pathmatcher';
+export * from '@flexent/errors';
+export * from '@flexent/http-router';
+export * from '@flexent/http-server';
+export * from '@flexent/init-decorator';
+export * from '@flexent/logger';
+export * from '@flexent/metrics';
+export * from '@flexent/pathmatcher';
 export * as pointer from '@flexent/pointer';
-export * as protocomm from '@flexent/protocomm';
+export * from '@flexent/protocomm';
