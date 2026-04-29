@@ -1,0 +1,34 @@
+{
+    "name": "@ubio/framework",
+    "version": "18.0.0-rc.0",
+    "description": "Thin wrapper around @flexent/* modules",
+    "license": "ISC",
+    "type": "module",
+    "main": "./out/main/index.js",
+    "types": "./out/main/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./out/main/index.d.ts",
+            "default": "./out/main/index.js"
+        }
+    },
+    "files": [
+        "out"
+    ],
+    "scripts": {
+        "clean": "rm -rf out *.tsbuildinfo",
+        "build": "tsc -b",
+        "dev": "tsc -b -w"
+    },
+    "dependencies": {
+        "@flexent/errors": "^2.1.0",
+        "@flexent/http-router": "^2.1.0",
+        "@flexent/http-server": "^2.1.0",
+        "@flexent/init-decorator": "^2.1.0",
+        "@flexent/logger": "^2.1.0",
+        "@flexent/metrics": "^2.1.0",
+        "@flexent/pathmatcher": "^2.1.0",
+        "@flexent/pointer": "^2.1.0",
+        "@flexent/protocomm": "^2.1.0"
+    }
+}

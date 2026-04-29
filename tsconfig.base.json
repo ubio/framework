@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "target": "ES2024",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "strict": true,
+        "skipLibCheck": true,
+        "sourceMap": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "composite": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "useDefineForClassFields": false,
+        "noImplicitOverride": true,
+        "allowJs": true,
+        "checkJs": false,
+        "lib": [
+            "ES2024",
+            "DOM",
+            "DOM.Iterable"
+        ]
+    }
+}
