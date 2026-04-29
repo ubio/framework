@@ -1,11 +1,29 @@
 {
-    "name": "@ubio/framework-monorepo",
+    "name": "@ubio/framework",
     "version": "18.0.0-rc.3",
-    "description": "UBIO Framework",
+    "description": "UBIO Application Framework",
     "author": "UBIO",
     "license": "ISC",
-    "private": true,
     "type": "module",
+    "main": "./out/main/index.js",
+    "types": "./out/main/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./out/main/index.d.ts",
+            "default": "./out/main/index.js"
+        },
+        "./backend": {
+            "types": "./out/main/backend.d.ts",
+            "default": "./out/main/backend.js"
+        },
+        "./vue": {
+            "types": "./out/main/vue.d.ts",
+            "default": "./out/main/vue.js"
+        }
+    },
+    "files": [
+        "out"
+    ],
     "homepage": "https://github.com/ubio/framework#readme",
     "bugs": {
         "url": "https://github.com/ubio/framework/issues"
@@ -14,25 +32,39 @@
         "type": "git",
         "url": "git+ssh://git@github.com/ubio/framework.git"
     },
-    "workspaces": [
-        "packages/*"
-    ],
     "pre-commit": [
         "lint"
     ],
     "scripts": {
-        "clean": "run-s clean:workspaces clean:ts",
-        "clean:workspaces": "npm run clean --workspaces --if-present",
-        "clean:ts": "rm -rf packages/*/{out,*.tsbuildinfo}",
+        "clean": "run-s clean:ts",
+        "clean:ts": "rm -rf out *.tsbuildinfo",
         "dev": "npm run clean && run-p dev:*",
         "dev:ts": "tsc -b -w",
         "compile:ts": "tsc -b",
         "lint": "eslint . --fix",
-        "test": "npm run test --workspaces --if-present",
+        "test": "NODE_ENV=test mocha",
         "version": "run-s clean compile:ts version:bump",
-        "version:bump": "bump-version && git add **/package.json",
-        "postversion": "npm run publish:workspaces && git push && git push --tags",
-        "publish:workspaces": "npm publish $(ls-publish-workspaces) --access=public --tag=next"
+        "version:bump": "bump-version && git add package.json",
+        "postversion": "npm publish --access=public --tag=next && git push && git push --tags"
+    },
+    "dependencies": {
+        "@flexent/errors": "^2.1.0",
+        "@flexent/http-router": "^2.1.0",
+        "@flexent/http-server": "^2.1.0",
+        "@flexent/init-decorator": "^2.1.0",
+        "@flexent/logger": "^2.1.0",
+        "@flexent/metrics": "^2.1.0",
+        "@flexent/pathmatcher": "^2.1.0",
+        "@flexent/pointer": "^2.1.0",
+        "@flexent/protocomm": "^2.1.0",
+        "@flexent/stack-backend": "^2.1.0",
+        "@flexent/stack-vue": "^2.1.0"
+    },
+    "peerDependencies": {
+        "@types/jsonwebtoken": "^9.0.10",
+        "jsonwebtoken": "^9.0.3",
+        "mesh-config": "^1.3.4",
+        "mesh-ioc": "^4.3.1"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.1",
