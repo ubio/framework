@@ -15,11 +15,6 @@
     "files": [
         "out"
     ],
-    "scripts": {
-        "clean": "rm -rf out *.tsbuildinfo",
-        "build": "tsc -b",
-        "dev": "tsc -b -w"
-    },
     "dependencies": {
         "@flexent/errors": "^2.1.0",
         "@flexent/http-router": "^2.1.0",

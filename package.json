@@ -32,12 +32,13 @@
         "version": "run-s clean compile:ts version:bump",
         "version:bump": "bump-version && git add **/package.json",
         "postversion": "npm run publish:workspaces && git push && git push --tags",
-        "publish:workspaces": "npm publish $(ls-publish-workspaces) --access=public"
+        "publish:workspaces": "npm publish $(ls-publish-workspaces) --access=public --tag=next"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.1",
         "@fastify/pre-commit": "^2.2.1",
         "@flexent/eslint-config": "^2.1.0",
+        "@flexent/repo-tools": "^2.1.0",
         "@types/node": "^24.9.0",
         "eslint": "^9.39.2",
         "globals": "^16.5.0",
