@@ -10,6 +10,14 @@
         ".": {
             "types": "./out/main/index.d.ts",
             "default": "./out/main/index.js"
+        },
+        "./backend": {
+            "types": "./out/main/backend.d.ts",
+            "default": "./out/main/backend.js"
+        },
+        "./vue": {
+            "types": "./out/main/vue.d.ts",
+            "default": "./out/main/vue.js"
         }
     },
     "files": [
@@ -24,6 +32,8 @@
         "@flexent/metrics": "^2.1.0",
         "@flexent/pathmatcher": "^2.1.0",
         "@flexent/pointer": "^2.1.0",
-        "@flexent/protocomm": "^2.1.0"
+        "@flexent/protocomm": "^2.1.0",
+        "@flexent/stack-backend": "^2.1.0",
+        "@flexent/stack-vue": "^2.1.0"
     }
 }
