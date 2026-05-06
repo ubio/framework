@@ -7,3 +7,4 @@ export * from '@flexent/metrics';
 export * from '@flexent/pathmatcher';
 export * as pointer from '@flexent/pointer';
 export * from '@flexent/protocomm';
+export * from '@flexent/protocomm-ws-client';
