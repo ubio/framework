@@ -47,19 +47,20 @@
         "postversion": "npm publish --access=public --tag=next && git push && git push --tags"
     },
     "dependencies": {
-        "@flexent/errors": "^2.3.0",
-        "@flexent/http-router": "^2.3.0",
-        "@flexent/http-server": "^2.3.0",
-        "@flexent/init-decorator": "^2.3.0",
-        "@flexent/jwt": "^2.3.0",
-        "@flexent/logger": "^2.3.0",
-        "@flexent/metrics": "^2.3.0",
-        "@flexent/pathmatcher": "^2.3.0",
-        "@flexent/pointer": "^2.3.0",
-        "@flexent/protocomm": "^2.3.0",
-        "@flexent/protocomm-ws-client": "^2.3.0",
-        "@flexent/stack-backend": "^2.3.0",
-        "@flexent/stack-vue": "^2.3.0"
+        "@flexent/errors": "^2.4.0",
+        "@flexent/http-router": "^2.4.0",
+        "@flexent/http-server": "^2.4.0",
+        "@flexent/init-decorator": "^2.4.0",
+        "@flexent/jwt": "^2.4.0",
+        "@flexent/logger": "^2.4.0",
+        "@flexent/metrics": "^2.4.0",
+        "@flexent/pathmatcher": "^2.4.0",
+        "@flexent/pointer": "^2.4.0",
+        "@flexent/protocomm": "^2.4.0",
+        "@flexent/protocomm-ws": "^2.4.0",
+        "@flexent/protocomm-http": "^2.4.0",
+        "@flexent/stack-backend": "^2.4.0",
+        "@flexent/stack-vue": "^2.4.0"
     },
     "peerDependencies": {
         "@types/jsonwebtoken": "^9.0.10",
