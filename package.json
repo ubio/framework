@@ -47,20 +47,20 @@
         "postversion": "npm publish --access=public --tag=next && git push && git push --tags"
     },
     "dependencies": {
-        "@flexent/errors": "^2.6.3",
-        "@flexent/http-router": "^2.6.3",
-        "@flexent/http-server": "^2.6.3",
-        "@flexent/init-decorator": "^2.6.3",
-        "@flexent/jwt": "^2.6.3",
-        "@flexent/logger": "^2.6.3",
-        "@flexent/metrics": "^2.6.3",
-        "@flexent/pathmatcher": "^2.6.3",
-        "@flexent/pointer": "^2.6.3",
-        "@flexent/protocomm": "^2.6.3",
-        "@flexent/protocomm-ws": "^2.6.3",
-        "@flexent/protocomm-http": "^2.6.3",
-        "@flexent/stack-backend": "^2.6.3",
-        "@flexent/stack-vue": "^2.6.3"
+        "@flexent/errors": "^2.6.5",
+        "@flexent/http-router": "^2.6.5",
+        "@flexent/http-server": "^2.6.5",
+        "@flexent/init-decorator": "^2.6.5",
+        "@flexent/jwt": "^2.6.5",
+        "@flexent/logger": "^2.6.5",
+        "@flexent/metrics": "^2.6.5",
+        "@flexent/pathmatcher": "^2.6.5",
+        "@flexent/pointer": "^2.6.5",
+        "@flexent/protocomm": "^2.6.5",
+        "@flexent/protocomm-ws": "^2.6.5",
+        "@flexent/protocomm-http": "^2.6.5",
+        "@flexent/stack-backend": "^2.6.5",
+        "@flexent/stack-vue": "^2.6.5"
     },
     "peerDependencies": {
         "@types/jsonwebtoken": "^9.0.10",
@@ -71,7 +71,7 @@
     "devDependencies": {
         "@eslint/js": "^9.39.1",
         "@fastify/pre-commit": "^2.2.1",
-        "@flexent/eslint-config": "^2.6.3",
+        "@flexent/eslint-config": "^2.6.5",
         "@flexent/repo-tools": "^2.1.0",
         "@types/node": "^24.9.0",
         "eslint": "^9.39.2",
