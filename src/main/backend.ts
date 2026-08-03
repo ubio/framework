@@ -1,3 +1,4 @@
+export * from '@flexent/http-proxy';
 export * from '@flexent/http-router';
 export * from '@flexent/http-server';
 export * from '@flexent/jwt';
